@@ -1,0 +1,88 @@
+PACKAGE_ROOT=source
+
+# Dstep stuff
+DSTEP=dstep
+SED=sed
+AWK=awk
+MKDIR=mkdir
+PATCH=patch
+ECHO=echo
+FIND=find
+
+DSTEP_DIR=dstep
+GLOBAL_MODULE=Core.Inc.hal
+
+GLOBAL_MODULE_FILE=$(DSTEP_DIR)/$(subst .,/,$(GLOBAL_MODULE)).d
+
+#DSTEP_MODULES += \
+#	$(subst /,.,$(basename $(shell $(FIND) Drivers -name '*.h')))	\
+#	$(subst /,.,$(basename $(shell $(FIND) Core/Inc -name '*.h')))	\
+
+DSTEP_FILES=$(addsuffix .d,$(subst .,/,$(DSTEP_MODULES)))
+
+DSTEP_OUTPUTS=$(addprefix $(DSTEP_DIR)/, $(DSTEP_FILES))
+
+D_SOURCES+=$(DSTEP_OUTPUTS)
+
+vpath %.h $(sort $(dir $(DSTEP_FILES:.d=.h)))
+vpath %.d $(sort $(dir $(DSTEP_OUTPUTS)))
+
+INLINE_IMPL_DIR=$(DSTEP_DIR)/_inline_impl
+C_SOURCES+=$(addprefix $(INLINE_IMPL_DIR)/, $(INLINE_IMPL_HEADERS:.h=.c))
+
+PATCHSTAMP=Drivers/_patched
+PATCHFILE=fix-generated.patch
+PATCHED_FILES=	\
+#	Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f446xx.h 	\
+#	Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h 	\
+
+
+# D Compiler
+MODFLAGS=-I$(DSTEP_DIR) -I$(PACKAGE_ROOT)
+LDC= ldc2
+LDC_MCU=$(CPU) $(FPU) $(FLOAT-ABI)
+LDCFLAGS=-mtriple=$(PREFIX:-=) -gcc=$(CC) $(LDC_MCU) $(MODFLAGS) -betterC -g -w
+
+# D Runtime
+#DRUNTIME_LIBDIR=-L$(HOME)/druntime/generated/
+#DRUNTIME_LIB=-ldruntime
+
+# Dlang objects
+OBJECTS += $(addprefix $(BUILD_DIR)/, $(D_SOURCES:.d=_d.o))
+vpath %.d $(sort $(dir $(D_SOURCES)))
+
+$(BUILD_DIR)/%_d.o: %.d Makefile $(GLOBAL_MODULE_FILE)| $(BUILD_DIR)
+	$(MKDIR) -p $(@D)
+	$(LDC) -c $(LDCFLAGS) -of $@ $<
+	$(MKDIR) -p $@		
+
+$(GLOBAL_MODULE_FILE): Makefile $(DSTEP_OUTPUTS)
+	$(ECHO) $(DSTEP_MODULES) | $(SED) 's/\s/\n/g' | $(AWK) '{print "public import "$$0";"}' > $@
+
+$(DSTEP_DIR)/%.d: %.h Makefile $(PATCHSTAMP) | $(DSTEP_DIR)
+	$(DSTEP) $(C_INCLUDES) $(C_DEFS) $< -o $@
+	$(SED) -i '1s/^/import $(GLOBAL_MODULE);/' $@
+	$(SED) -i '1s/^/module $(subst /,.,$(subst .d,,$@));\n/' $@
+	$(SED) -i '1s/ [^.]*./ /' $@
+
+$(PATCHSTAMP): $(PATCHED_FILES)
+	$(PATCH) -p1 < $(PATCHFILE)
+	$(ECHO) $(PATCHFILE) > $(PATCHSTAMP)
+
+.PRECIOUS: $(INLINE_IMPL_DIR)/%.c
+$(INLINE_IMPL_DIR)/%.c: %.h Makefile | $(INLINE_IMPL_DIR)
+	$(MKDIR) -p $(@D)
+	$(SED) 's/^__STATIC_INLINE//' < $< >> $@
+	$(SED) -i '1s/^/$(addsuffix __END_INLINE_IMPL_INCLUDE__,$(addprefix __BEGIN_INLINE_IMPL_INCLUDE__,$(INLINE_IMPL_INCLUDES)))/' $@
+	$(SED) -i '1s/__BEGIN_INLINE_IMPL_INCLUDE__/#include "/g' $@
+	$(SED) -i '1s/__END_INLINE_IMPL_INCLUDE__/"\n/g' $@
+	
+$(INLINE_IMPL_DIR): | $(DSTEP_DIR)
+	$(MKDIR) $@
+	
+$(DSTEP_DIR):
+	$(MKDIR) $@
+	
+
+clean:
+	-rm -fR $(BUILD_DIR) $(DSTEP_FILES)

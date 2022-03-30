@@ -1,0 +1,5 @@
+dstep
+*.o
+*.tmp
+*.swp
+build
