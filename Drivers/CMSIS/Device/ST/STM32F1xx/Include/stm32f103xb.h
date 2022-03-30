@@ -9,7 +9,7 @@
   *          This file contains:
   *           - Data structures and the address mapping for all peripherals
   *           - Peripheral's registers declarations and bits definition
-  *           - Macros to access peripheral’s registers hardware
+  *           - Macros to access peripheral's registers hardware
   *  
   ******************************************************************************
   * @attention
@@ -9930,7 +9930,7 @@ typedef struct
                                        ((INSTANCE) == I2C2))
 
 /******************************* SMBUS Instances ******************************/
-#define IS_SMBUS_ALL_INSTANCE         IS_I2C_ALL_INSTANCE
+#define IS_SMBUS_ALL_INSTANCE(INSTANCE)         IS_I2C_ALL_INSTANCE(INSTANCE)
 
 /****************************** IWDG Instances ********************************/
 #define IS_IWDG_ALL_INSTANCE(INSTANCE)  ((INSTANCE) == IWDG)
@@ -10204,6 +10204,7 @@ typedef struct
 
 
 /* Aliases for __IRQHandler */
+/* Disabled because they are undefined 
 #define ADC1_IRQHandler               ADC1_2_IRQHandler
 #define TIM1_BRK_TIM15_IRQHandler     TIM1_BRK_IRQHandler
 #define TIM9_IRQHandler               TIM1_BRK_IRQHandler
@@ -10220,7 +10221,7 @@ typedef struct
 #define USB_HP_IRQHandler             USB_HP_CAN1_TX_IRQHandler
 #define CAN1_RX0_IRQHandler           USB_LP_CAN1_RX0_IRQHandler
 #define USB_LP_IRQHandler             USB_LP_CAN1_RX0_IRQHandler
-
+*/
 
 /**
   * @}

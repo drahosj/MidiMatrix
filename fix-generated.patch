@@ -1,0 +1,67 @@
+diff --git a/Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h b/Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h
+index 99d0ecc..c49f25c 100644
+--- a/Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h
++++ b/Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h
+@@ -9,7 +9,7 @@
+   *          This file contains:
+   *           - Data structures and the address mapping for all peripherals
+   *           - Peripheral's registers declarations and bits definition
+-  *           - Macros to access peripheral’s registers hardware
++  *           - Macros to access peripheral's registers hardware
+   *  
+   ******************************************************************************
+   * @attention
+@@ -9930,7 +9930,7 @@ typedef struct
+                                        ((INSTANCE) == I2C2))
+ 
+ /******************************* SMBUS Instances ******************************/
+-#define IS_SMBUS_ALL_INSTANCE         IS_I2C_ALL_INSTANCE
++#define IS_SMBUS_ALL_INSTANCE(INSTANCE)         IS_I2C_ALL_INSTANCE(INSTANCE)
+ 
+ /****************************** IWDG Instances ********************************/
+ #define IS_IWDG_ALL_INSTANCE(INSTANCE)  ((INSTANCE) == IWDG)
+@@ -10204,6 +10204,7 @@ typedef struct
+ 
+ 
+ /* Aliases for __IRQHandler */
++/* Disabled because they are undefined 
+ #define ADC1_IRQHandler               ADC1_2_IRQHandler
+ #define TIM1_BRK_TIM15_IRQHandler     TIM1_BRK_IRQHandler
+ #define TIM9_IRQHandler               TIM1_BRK_IRQHandler
+@@ -10220,7 +10221,7 @@ typedef struct
+ #define USB_HP_IRQHandler             USB_HP_CAN1_TX_IRQHandler
+ #define CAN1_RX0_IRQHandler           USB_LP_CAN1_RX0_IRQHandler
+ #define USB_LP_IRQHandler             USB_LP_CAN1_RX0_IRQHandler
+-
++*/
+ 
+ /**
+   * @}
+diff --git a/Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h b/Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h
+index 61ff830..2d13b50 100644
+--- a/Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h
++++ b/Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h
+@@ -8,8 +8,8 @@
+   *          is using in the C source code, usually in main.c. This file contains:
+   *            - Configuration section that allows to select:
+   *              - The STM32F1xx device used in the target application
+-  *              - To use or not the peripheral’s drivers in application code(i.e. 
+-  *                code will be based on direct access to peripheral’s registers 
++  *              - To use or not the peripheral's drivers in application code(i.e. 
++  *                code will be based on direct access to peripheral's registers 
+   *                rather than drivers API), this option is controlled by 
+   *                "#define USE_HAL_DRIVER"
+   *  
+diff --git a/Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h b/Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h
+index 8e33366..2c40256 100644
+--- a/Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h
++++ b/Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h
+@@ -31,6 +31,8 @@
+ #ifndef __SYSTEM_STM32F10X_H
+ #define __SYSTEM_STM32F10X_H
+ 
++#include <stdint.h>
++
+ #ifdef __cplusplus
+  extern "C" {
+ #endif 
