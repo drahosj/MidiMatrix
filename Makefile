@@ -46,7 +46,8 @@ Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_dma.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_rcc.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_utils.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_exti.c \
-Core/Src/system_stm32f4xx.c
+Core/Src/system_stm32f4xx.c	\
+Core/Src/syscalls.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -56,12 +57,13 @@ startup_stm32f401xe.s
 
 D_SOURCES =	\
 	source/main.d		\
-	source/syscalls.d	\
+	source/io.d			\
 
 
 # Generate D modules
 DSTEP_MODULES= \
 	Drivers.STM32F4xx_HAL_Driver.Inc.stm32f4xx_ll_usart				\
+	Drivers.STM32F4xx_HAL_Driver.Inc.stm32f4xx_ll_gpio				\
     Drivers.CMSIS.Device.ST.STM32F4xx.Include.stm32f4xx     		\
     Drivers.CMSIS.Device.ST.STM32F4xx.Include.stm32f401xe    		\
     Drivers.CMSIS.Device.ST.STM32F4xx.Include.system_stm32f4xx 		\

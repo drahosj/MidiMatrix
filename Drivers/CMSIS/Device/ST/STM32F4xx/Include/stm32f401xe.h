@@ -8284,7 +8284,7 @@ typedef struct
                                        ((INSTANCE) == I2C3))
 
 /******************************* SMBUS Instances ******************************/
-#define IS_SMBUS_ALL_INSTANCE         IS_I2C_ALL_INSTANCE
+#define IS_SMBUS_ALL_INSTANCE(x)         IS_I2C_ALL_INSTANCE(x)
 
 /******************************** I2S Instances *******************************/
 
@@ -8295,7 +8295,7 @@ typedef struct
 #define IS_I2S_EXT_ALL_INSTANCE(INSTANCE) (((INSTANCE) == I2S2ext)|| \
                                            ((INSTANCE) == I2S3ext))
 /* Legacy Defines */
-#define IS_I2S_ALL_INSTANCE_EXT    IS_I2S_EXT_ALL_INSTANCE
+#define IS_I2S_ALL_INSTANCE_EXT(x)    IS_I2S_EXT_ALL_INSTANCE(x)
 
 
 /****************************** RTC Instances *********************************/
@@ -8559,14 +8559,14 @@ typedef struct
                                                ((INSTANCE) == USART6))
 
 /* Legacy defines */
-#define IS_UART_INSTANCE          IS_UART_HALFDUPLEX_INSTANCE
+#define IS_UART_INSTANCE(x)          IS_UART_HALFDUPLEX_INSTANCE(x)
 
 /****************** UART Instances : Hardware Flow control ********************/
 #define IS_UART_HWFLOW_INSTANCE(INSTANCE) (((INSTANCE) == USART1) || \
                                            ((INSTANCE) == USART2) || \
                                            ((INSTANCE) == USART6))
 /******************** UART Instances : LIN mode **********************/
-#define IS_UART_LIN_INSTANCE          IS_UART_HALFDUPLEX_INSTANCE
+#define IS_UART_LIN_INSTANCE(x)          IS_UART_HALFDUPLEX_INSTANCE(x)
 
 /********************* UART Instances : Smart card mode ***********************/
 #define IS_SMARTCARD_INSTANCE(INSTANCE) (((INSTANCE) == USART1) || \

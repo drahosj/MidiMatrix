@@ -19,6 +19,7 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __STM32_ASSERT_H
 #define __STM32_ASSERT_H
+#include <stdint.h>
 
 #ifdef __cplusplus
  extern "C" {

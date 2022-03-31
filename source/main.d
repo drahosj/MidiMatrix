@@ -10,7 +10,6 @@ import Core.Inc.usart;
 
 import ringbuf;
 import midi;
-import syscalls;
 
 /* hack */
 extern (C) int printf(const char * fmt, ...);
@@ -30,7 +29,8 @@ extern (C) void main()
     MX_USART1_UART_Init();
     MX_USART2_UART_Init();
 
-    _write(0, "Started\n", "Started".length);
+    puts("Started.");
+
 
     for(;;) {}
 }
