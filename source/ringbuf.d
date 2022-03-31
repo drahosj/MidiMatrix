@@ -1,48 +1,51 @@
 module ringbuf;
 
-shared struct Ringbuf(T, size_t size) {
-    T[size] buffer;
+struct Ringbuf(T, size_t size) {
     size_t head;
     size_t tail;
+    T[size] buffer;
 
-    bool full() shared
+    bool full() 
     {
         return (head + 1) % size == tail;
     }
 
-    bool empty() shared
+    bool empty()
     {
         return head == tail;
     }
 
-    int put(T t) shared
+    int put(T t)
     {
         if (full) {
             return -1;
         }
 
-        buffer[head] = cast(shared(T)) t;
-        head = (head + 1) % tail;
+        buffer[head] = t;
+        head = (head + 1) % size;
         
         return 0;
     }
 
-    int take(out T t) shared
+    int take(out T t) 
     {
         if (empty) {
             return -1;
         }
 
-        t = cast(T) buffer[tail];
-        tail = (head + 1) % tail;
+        t = buffer[tail];
+        tail = (tail + 1) % size;
 
         return 0;
     }
-    unittest 
-    {
+};
+
+version (runTest)
+{
+    int main() {
         import std.stdio;
         
-        auto buf = Ringbuf!(int, 5);
+        auto buf = Ringbuf!(int, 5)();
         int t = 1;
         assert(buf.take(t), "Initial take should fail");
         assert(t == 0, "t should be set to init");
@@ -57,7 +60,7 @@ shared struct Ringbuf(T, size_t size) {
         assert(!buf.take(t), "take 1");
         assert(t == 1, "t == 1");
         assert(!buf.full, "not full after one take");
-        assert(buf.put(5), "put 5");
+        assert(!buf.put(5), "put 5");
         assert(buf.full, "full after put 5");
         assert(buf.put(6), "put should fail");
         assert(buf.buffer == [1, 2, 3, 4, 5]);
@@ -81,6 +84,6 @@ shared struct Ringbuf(T, size_t size) {
         assert(buf.full, "Ends full");
 
         writeln("ringbuf.d: PASSED");
+        return 0;
     }
-};
-
+}

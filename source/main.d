@@ -29,20 +29,48 @@ extern (C) void main()
     MX_USART1_UART_Init();
     MX_USART2_UART_Init();
 
+    printf("midiOut: %x\n", &midiOut);
+
     puts("Started.");
 
+    if (OutputBuf.full) {
+        puts("Somehow output is full");
+    }
+    if (OutputBuf.empty) {
+        puts("Good, output is empty");
+    }
+    puts("foo");
+
+
+    sendMidi(Midi(TestMessage.NOTE_ON_1));
+    for(int i = 0; i < 30; i++) {
+        int retry;
+        while(sendMidi(Midi(TestMessage.NOTE_ON_1))) {
+            retry++;
+        }
+        if (retry > 0) {
+            printf("Message %d: retries %d\n", i, retry);
+        }
+    }
+    for(int i = 0; i < 8000000; i++) {}
+    puts("Should be done by now");
 
     for(;;) {}
 }
 
 
-Ringbuf!(Midi, 16) ForwardBuf;
-Ringbuf!(Midi, 16) OutputBuf;
-Midi midiOut;
+__gshared static Ringbuf!(Midi, 16) ForwardBuf;
+__gshared static Ringbuf!(Midi, 16) OutputBuf;
+__gshared static Midi midiOut;
 
-bool sendMidi(Midi m)
+int sendMidi(Midi m)
 {
-    return false;
+    if (!OutputBuf.put(m)) {
+        LL_USART_EnableIT_TXE(USART1);
+        return 0;
+    } else {
+        return -1;
+    }
 }
 
 extern (C) void MidiIRQHandler()
@@ -55,15 +83,17 @@ extern (C) void MidiIRQHandler()
 
     if (LL_USART_IsActiveFlag_TXE(USART1)) {
         if (midiOut.raw.length == 0) {
-            if (OutputBuf.take(midiOut) || ForwardBuf.take(midiOut)) {
+            if (!(OutputBuf.take(midiOut)/* && ForwardBuf.take(midiOut)*/)) {
+                assert(midiOut.raw.ptr != null, "midi out ptr is null");
+                assert(midiOut.raw.length >= 0, "midi out length is zero");
                 LL_USART_TransmitData8(USART1, midiOut.raw[0]);
-                midiOut.raw = midiOut.raw[1 .. $];
+                midiOut.s++;
             } else {
                 LL_USART_DisableIT_TXE(USART1);
             }
         } else {
             LL_USART_TransmitData8(USART1, midiOut.raw[0]);
-            midiOut.raw = midiOut.raw[1 .. $];
+            midiOut.s++;
         }
     }
 }

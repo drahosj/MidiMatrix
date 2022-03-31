@@ -22,7 +22,7 @@ TARGET = MidiMatrix
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Og
+OPT = 
 
 
 #######################################
@@ -58,6 +58,8 @@ startup_stm32f401xe.s
 D_SOURCES =	\
 	source/main.d		\
 	source/io.d			\
+	source/midi.d		\
+	source/ringbuf.d	\
 
 
 # Generate D modules
