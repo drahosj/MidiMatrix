@@ -29,16 +29,16 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 
-#include "stm32f1xx_ll_rcc.h"
-#include "stm32f1xx_ll_bus.h"
-#include "stm32f1xx_ll_system.h"
-#include "stm32f1xx_ll_exti.h"
-#include "stm32f1xx_ll_cortex.h"
-#include "stm32f1xx_ll_utils.h"
-#include "stm32f1xx_ll_pwr.h"
-#include "stm32f1xx_ll_dma.h"
-#include "stm32f1xx_ll_usart.h"
-#include "stm32f1xx_ll_gpio.h"
+#include "stm32f4xx_ll_rcc.h"
+#include "stm32f4xx_ll_bus.h"
+#include "stm32f4xx_ll_system.h"
+#include "stm32f4xx_ll_exti.h"
+#include "stm32f4xx_ll_cortex.h"
+#include "stm32f4xx_ll_utils.h"
+#include "stm32f4xx_ll_pwr.h"
+#include "stm32f4xx_ll_dma.h"
+#include "stm32f4xx_ll_usart.h"
+#include "stm32f4xx_ll_gpio.h"
 
 #if defined(USE_FULL_ASSERT)
 #include "stm32_assert.h"
@@ -72,6 +72,18 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define B1_Pin LL_GPIO_PIN_13
+#define B1_GPIO_Port GPIOC
+#define USART_TX_Pin LL_GPIO_PIN_2
+#define USART_TX_GPIO_Port GPIOA
+#define USART_RX_Pin LL_GPIO_PIN_3
+#define USART_RX_GPIO_Port GPIOA
+#define LD2_Pin LL_GPIO_PIN_5
+#define LD2_GPIO_Port GPIOA
+#define TMS_Pin LL_GPIO_PIN_13
+#define TMS_GPIO_Port GPIOA
+#define TCK_Pin LL_GPIO_PIN_14
+#define TCK_GPIO_Port GPIOA
 #ifndef NVIC_PRIORITYGROUP_0
 #define NVIC_PRIORITYGROUP_0         ((uint32_t)0x00000007) /*!< 0 bit  for pre-emption priority,
                                                                  4 bits for subpriority */

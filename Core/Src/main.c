@@ -73,7 +73,8 @@ void SystemClock_Config(void)
   while(LL_FLASH_GetLatency()!= LL_FLASH_LATENCY_2)
   {
   }
-  LL_RCC_HSI_SetCalibTrimming(8);
+  LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE2);
+  LL_RCC_HSI_SetCalibTrimming(16);
   LL_RCC_HSI_Enable();
 
    /* Wait till HSI is ready */
@@ -81,7 +82,7 @@ void SystemClock_Config(void)
   {
 
   }
-  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSI_DIV_2, LL_RCC_PLL_MUL_16);
+  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSI, LL_RCC_PLLM_DIV_16, 336, LL_RCC_PLLP_DIV_4);
   LL_RCC_PLL_Enable();
 
    /* Wait till PLL is ready */
@@ -91,7 +92,7 @@ void SystemClock_Config(void)
   }
   LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
   LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_2);
-  LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_2);
+  LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
   LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
 
    /* Wait till System clock is ready */
@@ -99,8 +100,9 @@ void SystemClock_Config(void)
   {
 
   }
-  LL_Init1msTick(64000000);
-  LL_SetSystemCoreClock(64000000);
+  LL_Init1msTick(84000000);
+  LL_SetSystemCoreClock(84000000);
+  LL_RCC_SetTIMPrescaler(LL_RCC_TIM_PRESCALER_TWICE);
 }
 
 /* USER CODE BEGIN 4 */

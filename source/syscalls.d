@@ -10,7 +10,7 @@ void io_putchar(int c)
 	LL_USART_TransmitData8(USART2, cast(ubyte) c);
 }
 
-extern (C) int _write(int file, char *ptr, int len)
+extern (C) int _write(int file, const(char) *ptr, int len)
 {
 	int DataIdx;
 
