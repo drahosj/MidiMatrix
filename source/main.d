@@ -15,12 +15,19 @@ import midi;
 extern (C) int printf(const char * fmt, ...);
 extern (C) int puts(const char * fmt);
 
-__gshared ubyte[4096] emulated_tls_buffer;
+__gshared GPIO_TypeDef*[] line_ports = [
+    GPIOC,
+    GPIOC,
+    GPIOC,
+    GPIOC
+];
 
-extern (C) void * __aeabi_read_tp()
-{
-    return emulated_tls_buffer.ptr;
-}
+__gshared uint[] line_pins = [
+    LL_GPIO_PIN_0,
+    LL_GPIO_PIN_1,
+    LL_GPIO_PIN_2,
+    LL_GPIO_PIN_3
+];
 
 extern (C) void main()
 {
@@ -30,6 +37,7 @@ extern (C) void main()
     MX_USART2_UART_Init();
 
     printf("midiOut: %x\n", &midiOut);
+    printf("midiOut.test: %d\n", midiOut.test);
 
     puts("Started.");
 
@@ -52,10 +60,41 @@ extern (C) void main()
             printf("Message %d: retries %d\n", i, retry);
         }
     }
-    for(int i = 0; i < 8000000; i++) {}
+    for(int i = 0; i < 1000000; i++) {}
     puts("Should be done by now");
 
-    for(;;) {}
+    LL_GPIO_ResetOutputPin(line_ports[0], line_pins[0]);
+    uint line;
+    uint[16] old_input;
+    for(;;) {
+        for(int i = 0; i < 1000; i++) {}
+        uint input = ~(LL_GPIO_ReadInputPort(GPIOB) | 0xffff0800);
+        input |= ~(LL_GPIO_ReadInputPort(GPIOA) | 0xFFFFF7FF);
+        LL_GPIO_SetOutputPin(line_ports[line], line_pins[line]);
+        int next_line = (line + 1) % line_ports.length;
+        LL_GPIO_ResetOutputPin(line_ports[next_line], line_pins[next_line]);
+
+        if (input != old_input[line]) {
+            foreach(bit; 0 .. 16) {
+                uint s = (input >> bit) & 0x1;
+                if (s != ((old_input[line] >> bit) & 0x1)) {
+                    ubyte[3] raw_midi;
+                    raw_midi[0] = cast(ubyte)( 0x80 | (s << 4) | (line >> 2));
+                    raw_midi[1] = cast(ubyte)((bit << 2) + line + 36);
+                    raw_midi[2] = 64;
+                    int retry = 0;
+                    while(sendMidi(Midi(raw_midi))) {
+                        retry++;
+                        if (retry > 250) {
+                            printf("Buffer full, dropped message\n");
+                        }
+                    }
+                }
+            } 
+        }
+        old_input[line] = input;
+        line = next_line;
+    }
 }
 
 
@@ -65,6 +104,7 @@ __gshared static Midi midiOut;
 
 int sendMidi(Midi m)
 {
+    printf("[MIDI] CHAN_%d %s %d %d\n", m.chan, m.str.ptr, m.num, m.vel);
     if (!OutputBuf.put(m)) {
         LL_USART_EnableIT_TXE(USART1);
         return 0;

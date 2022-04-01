@@ -9,12 +9,40 @@ enum TestMessage {
 
 struct Midi {
     ubyte[8] buf;
-    bool valid = false;
+    int test = 42;
     size_t e;
     size_t s;
 
     ubyte[] raw() {
         return buf[s .. e];
+    }
+
+    string str() {
+        if ((raw[0] & 0x90) == 0x90) {
+            return "NOTE_ON";
+        } else if ((raw[0] & 0x80) == 0x80) {
+            return "NOTE_OFF";
+        } else {
+            return "OTHER";
+        }
+    }
+
+    uint num() {
+        return raw[1];
+    }
+
+    uint vel() {
+        return raw[2];
+    }
+
+    uint chan() {
+        return raw[0] & 0x0f;
+    }
+
+    this(ubyte[3] c) {
+        s = 0;
+        e = 3;
+        buf[0 .. 3] = c;
     }
 
     this(TestMessage t) {
