@@ -4,7 +4,8 @@ enum TestMessage {
     NOTE_ON_1,
     NOTE_OFF_1,
     NOTE_ON_2,
-    NOTE_OFF_2
+    NOTE_OFF_2,
+    ALL_NOTES_OFF
 };
 
 struct Midi {
@@ -18,9 +19,9 @@ struct Midi {
     }
 
     string str() {
-        if ((raw[0] & 0x90) == 0x90) {
+        if ((raw[0] & 0xf0) == 0x90) {
             return "NOTE_ON";
-        } else if ((raw[0] & 0x80) == 0x80) {
+        } else if ((raw[0] & 0xf0) == 0x80) {
             return "NOTE_OFF";
         } else {
             return "OTHER";
@@ -37,6 +38,10 @@ struct Midi {
 
     uint chan() {
         return raw[0] & 0x0f;
+    }
+
+    void setChan(ubyte c) {
+        raw[0] |= c & 0x0f;
     }
 
     this(ubyte[3] c) {
@@ -62,6 +67,10 @@ struct Midi {
                 break;
             case NOTE_OFF_2:
                 buf = [0x80, 0x36, 0x40, 0, 0, 0, 0, 0];
+                e = 3;
+                break;
+            case ALL_NOTES_OFF:
+                buf = [0xb0, 123, 0, 0, 0, 0, 0, 0];
                 e = 3;
                 break;
             default:

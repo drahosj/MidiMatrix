@@ -19,14 +19,45 @@ __gshared GPIO_TypeDef*[] line_ports = [
     GPIOC,
     GPIOC,
     GPIOC,
-    GPIOC
+    GPIOC,
+    GPIOC,
+    GPIOC,
+    GPIOC,
+    GPIOC,
+    GPIOC,
+    GPIOA,
+    GPIOA,
+    GPIOA
 ];
 
 __gshared uint[] line_pins = [
     LL_GPIO_PIN_0,
     LL_GPIO_PIN_1,
     LL_GPIO_PIN_2,
-    LL_GPIO_PIN_3
+    LL_GPIO_PIN_3,
+    LL_GPIO_PIN_4,
+    LL_GPIO_PIN_5,
+    LL_GPIO_PIN_6,
+    LL_GPIO_PIN_7,
+    LL_GPIO_PIN_12,
+    LL_GPIO_PIN_4,
+    LL_GPIO_PIN_6,
+    LL_GPIO_PIN_7
+];
+
+__gshared uint[] line_invert = [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0xffff,
+    0xffff,
+    0xffff,
+    0xffff
 ];
 
 extern (C) void main()
@@ -36,10 +67,8 @@ extern (C) void main()
     MX_USART1_UART_Init();
     MX_USART2_UART_Init();
 
-    printf("midiOut: %x\n", &midiOut);
-    printf("midiOut.test: %d\n", midiOut.test);
-
     puts("Started.");
+    printf("Build: %s\n", __TIMESTAMP__.ptr);
 
     if (OutputBuf.full) {
         puts("Somehow output is full");
@@ -50,18 +79,11 @@ extern (C) void main()
     puts("foo");
 
 
-    sendMidi(Midi(TestMessage.NOTE_ON_1));
-    for(int i = 0; i < 30; i++) {
-        int retry;
-        while(sendMidi(Midi(TestMessage.NOTE_ON_1))) {
-            retry++;
-        }
-        if (retry > 0) {
-            printf("Message %d: retries %d\n", i, retry);
-        }
+    foreach(ubyte i; 0..15) {
+        auto m = Midi(TestMessage.ALL_NOTES_OFF);
+        m.setChan(i);
+        sendMidi(m);
     }
-    for(int i = 0; i < 1000000; i++) {}
-    puts("Should be done by now");
 
     LL_GPIO_ResetOutputPin(line_ports[0], line_pins[0]);
     uint line;
@@ -74,13 +96,15 @@ extern (C) void main()
         int next_line = (line + 1) % line_ports.length;
         LL_GPIO_ResetOutputPin(line_ports[next_line], line_pins[next_line]);
 
+        input ^= line_invert[line];
+
         if (input != old_input[line]) {
             foreach(bit; 0 .. 16) {
                 uint s = (input >> bit) & 0x1;
                 if (s != ((old_input[line] >> bit) & 0x1)) {
                     ubyte[3] raw_midi;
-                    raw_midi[0] = cast(ubyte)( 0x80 | (s << 4) | (line >> 2));
-                    raw_midi[1] = cast(ubyte)((bit << 2) + line + 36);
+                    raw_midi[0] = cast(ubyte)(0x80 | (s << 4) | (line  >> 2));
+                    raw_midi[1] = cast(ubyte)((bit << 2) + (line % 4) + 36);
                     raw_midi[2] = 64;
                     int retry = 0;
                     while(sendMidi(Midi(raw_midi))) {
@@ -97,14 +121,11 @@ extern (C) void main()
     }
 }
 
-
-__gshared static Ringbuf!(Midi, 16) ForwardBuf;
-__gshared static Ringbuf!(Midi, 16) OutputBuf;
-__gshared static Midi midiOut;
+shared Ringbuf!(Midi, 16) OutputBuf;
 
 int sendMidi(Midi m)
 {
-    printf("[MIDI] CHAN_%d %s %d %d\n", m.chan, m.str.ptr, m.num, m.vel);
+    printf("[MIDI] CHAN_%d %s %d %d\n", m.chan + 1, m.str.ptr, m.num, m.vel);
     if (!OutputBuf.put(m)) {
         LL_USART_EnableIT_TXE(USART1);
         return 0;
@@ -115,6 +136,7 @@ int sendMidi(Midi m)
 
 extern (C) void MidiIRQHandler()
 {
+    __gshared Midi midiOut;
 
     if (LL_USART_IsActiveFlag_RXNE(USART1)) {
         ubyte tmp = LL_USART_ReceiveData8(USART1);
@@ -123,7 +145,7 @@ extern (C) void MidiIRQHandler()
 
     if (LL_USART_IsActiveFlag_TXE(USART1)) {
         if (midiOut.raw.length == 0) {
-            if (!(OutputBuf.take(midiOut)/* && ForwardBuf.take(midiOut)*/)) {
+            if (!(OutputBuf.take(midiOut))) {
                 assert(midiOut.raw.ptr != null, "midi out ptr is null");
                 assert(midiOut.raw.length >= 0, "midi out length is zero");
                 LL_USART_TransmitData8(USART1, midiOut.raw[0]);

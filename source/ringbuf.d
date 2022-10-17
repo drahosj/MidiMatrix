@@ -1,11 +1,11 @@
 module ringbuf;
 
-struct Ringbuf(T, size_t size) {
+shared struct Ringbuf(T, size_t size) {
     size_t head;
     size_t tail;
     T[size] buffer;
 
-    bool full() 
+    bool full()
     {
         return (head + 1) % size == tail;
     }
@@ -21,19 +21,21 @@ struct Ringbuf(T, size_t size) {
             return -1;
         }
 
-        buffer[head] = t;
+        /* TODO: Wrap in check for interrupt level that direction is sane */
+        buffer[head] = cast(shared) t;
         head = (head + 1) % size;
         
         return 0;
     }
 
-    int take(out T t) 
+    int take(out T t)
     {
         if (empty) {
             return -1;
         }
 
-        t = buffer[tail];
+        /* TODO: Wrap in check for interrupt level that direction is sane */
+        t = cast(T) buffer[tail];
         tail = (tail + 1) % size;
 
         return 0;
